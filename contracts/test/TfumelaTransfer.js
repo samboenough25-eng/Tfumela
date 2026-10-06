@@ -59,6 +59,23 @@ describe("TfumelaTransfer", function () {
     await expect(tf.connect(alice).sendToken(usdt.target,bob.address,1,ethers.id("p"))).to.be.revertedWithCustomError(tf,"EnforcedPause");
   });
 
+  it("prevents transfer id replay", async()=>{
+    const {alice,bob,usdt,tf}=await setup();
+    const amount=ethers.parseUnits("10",6);
+    const fee=ethers.parseUnits("0.55",6);
+    const id=ethers.id("replay");
+    await usdt.connect(alice).approve(tf.target,amount+fee+amount+fee);
+    await tf.connect(alice).sendToken(usdt.target,bob.address,amount,id);
+    await expect(tf.connect(alice).sendToken(usdt.target,bob.address,amount,id))
+      .to.be.revertedWithCustomError(tf,"TransferIdAlreadyUsed");
+  });
+
+  it("rejects a fee cap below the fixed fee", async()=>{
+    const {owner,usdt,tf}=await setup();
+    await expect(tf.connect(owner).setFeeConfig(usdt.target,true,50,ethers.parseUnits("0.5",6),ethers.parseUnits("0.49",6)))
+      .to.be.revertedWithCustomError(tf,"InvalidFee");
+  });
+
   it("rejects insufficient allowance", async()=>{
     const {alice,bob,usdt,tf}=await setup();
     await usdt.connect(alice).approve(tf.target,ethers.parseUnits("100",6));
