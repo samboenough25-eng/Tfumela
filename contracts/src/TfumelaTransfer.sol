@@ -19,6 +19,7 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     address public treasury;
     mapping(address => bool) public supportedToken;
     mapping(address => FeeConfig) public feeConfig;
+    mapping(bytes32 => bool) public usedTransferId;
 
     error ZeroAddress();
     error ZeroAmount();
@@ -28,6 +29,7 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     error FeeTooHigh();
     error SameRecipient();
     error EmptyTransferId();
+    error TransferIdAlreadyUsed();
 
     event SupportedTokenUpdated(address indexed token, bool enabled);
     event FeeConfigUpdated(address indexed token, bool enabled, uint16 feeBps, uint256 fixedFee, uint256 maxFee);
@@ -49,6 +51,9 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
         if (recipient == msg.sender) revert SameRecipient();
         if (amount == 0) revert ZeroAmount();
         if (transferId == bytes32(0)) revert EmptyTransferId();
+        if (usedTransferId[transferId]) revert TransferIdAlreadyUsed();
+
+        usedTransferId[transferId] = true;
 
         uint256 fee = calculateFee(token, amount);
         uint256 total = amount + fee;
@@ -82,7 +87,7 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
 
     function setFeeConfig(address token, bool enabled, uint16 feeBps, uint256 fixedFee, uint256 maxFee) external onlyOwner {
         if (token == address(0)) revert ZeroAddress();
-        if (feeBps > MAX_FEE_BPS || fixedFee > MAX_FIXED_FEE || (enabled && maxFee == 0)) revert InvalidFee();
+        if (feeBps > MAX_FEE_BPS || fixedFee > MAX_FIXED_FEE || (enabled && (maxFee == 0 || maxFee < fixedFee))) revert InvalidFee();
         feeConfig[token] = FeeConfig(enabled, feeBps, fixedFee, maxFee);
         emit FeeConfigUpdated(token, enabled, feeBps, fixedFee, maxFee);
     }
