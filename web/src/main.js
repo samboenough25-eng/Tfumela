@@ -44,10 +44,24 @@ async function connect() {
   provider = new ethers.BrowserProvider(window.ethereum);
   let network = await provider.getNetwork();
   if (network.chainId !== CHAIN_ID) {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x61" }]
-    });
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x61" }]
+      });
+    } catch (error) {
+      if (error?.code !== 4902) throw error;
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+          chainId: "0x61",
+          chainName: "BNB Smart Chain Testnet",
+          nativeCurrency: { name: "tBNB", symbol: "tBNB", decimals: 18 },
+          rpcUrls: ["https://data-seed-prebsc-1-s1.bnbchain.org"],
+          blockExplorerUrls: ["https://testnet.bscscan.com"]
+        }]
+      });
+    }
     network = await provider.getNetwork();
   }
   if (network.chainId !== CHAIN_ID) throw new Error("Please switch MetaMask to BNB Smart Chain Testnet.");
@@ -128,6 +142,14 @@ $("connect").addEventListener("click", () => connect().catch((e) => setStatus(e.
 $("quote").addEventListener("click", () => getQuote().catch((e) => setStatus(e.message)));
 $("send").addEventListener("click", send);
 $("token").addEventListener("change", () => {
+  selectedQuote = null;
+  $("quote-result").textContent = "";
+});
+$("recipient").addEventListener("input", () => {
+  selectedQuote = null;
+  $("quote-result").textContent = "";
+});
+$("amount").addEventListener("input", () => {
   selectedQuote = null;
   $("quote-result").textContent = "";
 });
