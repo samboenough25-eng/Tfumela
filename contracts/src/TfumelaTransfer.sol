@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
@@ -13,12 +14,14 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     uint16 public constant BPS = 10_000;
     uint16 public constant MAX_FEE_BPS = 1_000;
     uint256 public constant MAX_FIXED_FEE = 1000e6;
+    uint8 public constant REQUIRED_TOKEN_DECIMALS = 6;
 
     struct FeeConfig { bool enabled; uint16 feeBps; uint256 fixedFee; uint256 maxFee; }
 
     address public treasury;
     mapping(address => bool) public supportedToken;
     mapping(address => FeeConfig) public feeConfig;
+    mapping(address => bool) public verifiedToken;
     mapping(bytes32 => bool) public usedTransferId;
 
     error ZeroAddress();
@@ -30,6 +33,7 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     error SameRecipient();
     error EmptyTransferId();
     error TransferIdAlreadyUsed();
+    error InvalidTokenDecimals();
 
     event SupportedTokenUpdated(address indexed token, bool enabled);
     event FeeConfigUpdated(address indexed token, bool enabled, uint16 feeBps, uint256 fixedFee, uint256 maxFee);
@@ -81,6 +85,11 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
 
     function setSupportedToken(address token, bool enabled) external onlyOwner {
         if (token == address(0)) revert ZeroAddress();
+        if (enabled) {
+            uint8 decimals = IERC20Metadata(token).decimals();
+            if (decimals != REQUIRED_TOKEN_DECIMALS) revert InvalidTokenDecimals();
+            verifiedToken[token] = true;
+        }
         supportedToken[token] = enabled;
         emit SupportedTokenUpdated(token, enabled);
     }
