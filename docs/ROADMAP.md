@@ -1,77 +1,110 @@
 # Tfumela Build Roadmap
 
-## Stage 1 — Specification and foundation
-**Status: SUBSTANTIALLY COMPLETE**
+## Stage 1 — Specification and economic model
+**Status: COMPLETE for V1 engineering scope**
 
 - Product scope
 - USDT/USDC-only policy
 - Non-custodial wallet model
-- Fee/revenue model
+- Option B fee model
 - Transfer lifecycle
 - Security boundaries
 - New Render PostgreSQL requirement
-- KYC deferred
+- SADC configuration model
+- KYC deferred to production/compliance gate
 
 ## Stage 2 — Repository and development foundation
-**Status: IN PROGRESS**
-- TypeScript/Node backend
-- Web dApp
-- Solidity contract workspace
-- Shared configuration
+**Status: COMPLETE / HARDENING CONTINUES**
+
+- Contract workspace
+- Node backend foundation
+- Vite customer dApp
 - Environment templates
-- CI
-- lint/typecheck/test gates
+- Separate CI workflows
+- Automated contract/backend/web test/build gates
 
 ## Stage 3 — Smart contract
-**Status: IN PROGRESS — CORE IMPLEMENTATION PRESENT**
-- Supported USDT/USDC configuration
+**Status: IMPLEMENTED — SECURITY TESTING IN PROGRESS**
+
+- USDT/USDC allow-list
+- Six-decimal token verification
 - Transfer function
-- Fee calculation
+- Option B fee calculation
 - Treasury
-- limits
+- bounded fee rate/fixed fee/max fee
+- replay protection
 - pause
 - events
-- access control
+- ownership/access control
+- atomic failure behavior
+- expanded adversarial tests
 
 ## Stage 4 — Contract verification
+**Status: IN PROGRESS**
+
 - unit tests
-- edge cases
 - adversarial tests
-- gas review
-- security review
-- testnet deployment
+- token-contract validation
+- deployment-script validation
+- gas/security review
+- independent testnet deployment and verification still required
 
 ## Stage 5 — Customer wallet dApp
-- connect wallet
-- verify wallet ownership
-- token balances
-- recipient selection
-- quote
-- approve
-- transfer
-- confirmation
-- history
+**Status: FIRST WORKING IMPLEMENTATION COMPLETE — INTEGRATION HARDENING REQUIRED**
 
-## Stage 6 — Backend + new Render PostgreSQL
-**Status: FOUNDATION STARTED**
-- schema/migrations
-- authentication
-- wallet/recipient records
+Implemented:
+- MetaMask connection
+- BNB testnet switching/setup
+- USDT/USDC balances
+- on-chain quote
+- exact approval
+- customer-signed transfer
+- confirmation feedback
+
+Still required:
+- backend transfer creation/idempotency
+- wallet ownership proof
+- persistent history
+- backend status reconciliation
+- production-grade error UX
+
+## Stage 6 — Backend + dedicated Render PostgreSQL
+**Status: FOUNDATION IN PROGRESS**
+
+Implemented:
+- API health/readiness foundation
+- hardened configuration validation
+- Option B fee arithmetic helper
+- initial database schema
+- hardening migration fields
+- SADC country configuration
+
+Still required:
+- database migration execution service
+- authentication/session security
+- wallet challenge/ownership verification
+- recipient management
 - transfer orchestration
-- blockchain monitoring
-- reconciliation
-- audit logs
+- RPC provider integration
+- blockchain event indexing
+- finality/reorg handling
+- reconciliation worker
+- persistent transfer history
 
 ## Stage 7 — WhatsApp
-- adapter
+**Status: NOT STARTED**
+
+- provider-neutral adapter
 - local simulator
-- webhook processing
+- webhook authenticity/idempotency
 - customer commands/conversation
 - secure signing handoff
 - transaction status messages
 
 ## Stage 8 — Admin
-- operational dashboard
+**Status: NOT STARTED**
+
+- operations dashboard
 - transfer monitoring
 - revenue
 - limits
@@ -79,22 +112,32 @@
 - contract state
 - reconciliation
 - system health
+- audit log review
 
 ## Stage 9 — BNB testnet E2E
-Prove:
+**Status: BLOCKED UNTIL VERIFIED TOKEN/CONTRACT ADDRESSES EXIST**
 
-Customer A -> USDT -> Customer B
-
-and:
-
-Customer A -> USDC -> Customer B
-
-including fee collection and failure recovery.
+Required:
+- deploy Tfumela contract on BNB testnet
+- verify USDT and USDC token contracts independently
+- configure API and web
+- Customer A -> USDT -> Customer B
+- Customer A -> USDC -> Customer B
+- fee collection
+- approval failure
+- insufficient balance
+- rejected signature
+- reverted transaction
+- duplicate/idempotency recovery
+- restart/reconciliation recovery
 
 ## Stage 10 — Full audit
+**Status: NOT STARTED**
+
 - economic audit
 - smart-contract security audit
 - backend security audit
+- dApp security audit
 - WhatsApp security audit
 - database audit
 - secrets audit
@@ -102,7 +145,9 @@ including fee collection and failure recovery.
 - failure/recovery audit
 
 ## Stage 11 — Production preparation
-- regulatory/legal determination
+**Status: NOT STARTED**
+
+- country-by-country regulatory/legal determination
 - compliance architecture
 - KYC/AML if required
 - production infrastructure
@@ -112,10 +157,10 @@ including fee collection and failure recovery.
 - wallet/gas strategy
 
 ## Stage 12 — Controlled mainnet launch
-Only after all production gates pass.
+**Status: NOT ELIGIBLE YET**
 
-### Immediate milestone
+Only after every production gate, independent security review, operational runbook, legal/compliance determination and successful controlled testnet E2E.
 
-The first concrete engineering milestone is:
+## Immediate engineering milestone
 
-**A complete, tested USDT/USDC transfer engine on BNB testnet with automatic Tfumela fee collection.**
+**Complete the backend blockchain orchestration/reconciliation layer, create the separate Render PostgreSQL, deploy the verified BNB testnet contract, and prove both USDT and USDC end-to-end.**
