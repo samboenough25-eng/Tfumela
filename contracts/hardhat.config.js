@@ -6,5 +6,12 @@ module.exports = {
     settings: { optimizer: { enabled: true, runs: 200 } }
   },
   paths: { sources: "./src", tests: "./test" },
-  networks: { hardhat: {} }
+  networks: {
+    hardhat: {},
+    bscTestnet: {
+      url: process.env.BNB_TESTNET_RPC_URL || "",
+      chainId: 97,
+      accounts: process.env.DEPLOYER_PRIVATE_KEY ? [process.env.DEPLOYER_PRIVATE_KEY] : []
+    }
+  }
 };
