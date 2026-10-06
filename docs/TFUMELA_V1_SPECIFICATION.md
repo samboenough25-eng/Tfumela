@@ -62,6 +62,26 @@ Business reporting must distinguish:
 - refunds/adjustments where applicable;
 - net contribution.
 
+
+
+## 3.4 V1 fee model — Option B
+
+The selected V1 commercial fee model is **Option B: fixed + percentage**.
+
+- Fixed fee: **0.5 USDT/USDC equivalent in the transferred token**
+- Variable fee: **0.5% (50 basis points)** of the recipient amount
+- Customer enters the recipient amount; the fee is added on top.
+- Example: recipient receives 100 USDT; fee = 0.5 USDT + 0.5 USDT = 1 USDT; customer total = 101 USDT.
+- The same formula applies to USDC, using USDC units.
+
+The fee formula is:
+
+`fee = fixedFee + floor(amount × 50 / 10,000)`
+
+The implementation must remain contract-configurable rather than permanently hard-coding these values. The contract must enforce a maximum fee/fee-rate ceiling so an authorized configuration change cannot set an unlimited fee. Fee changes must be emitted as configuration events and reflected in the pre-authorization quote.
+
+The fixed fee must be validated against token decimals when configured. The backend must obtain the active on-chain configuration rather than independently inventing a fee.
+
 ## 4. Non-custodial security model
 
 Tfumela must not collect or store customer private keys in the normal V1 architecture.
