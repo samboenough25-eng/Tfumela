@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Tfumela USDT and USDC wallet transfer dApp on BNB Smart Chain">
+  <title>Tfumela — Send USDT or USDC</title>
+</head>
+<body>
+  <main id="app">
+    <header>
+      <h1>Tfumela</h1>
+      <p>Non-custodial USDT/USDC transfers on BNB Smart Chain Testnet.</p>
+    </header>
+
+    <section aria-labelledby="wallet-heading">
+      <h2 id="wallet-heading">Wallet</h2>
+      <button id="connect">Connect MetaMask</button>
+      <p id="wallet-status">Not connected.</p>
+      <div id="balances"></div>
+    </section>
+
+    <section aria-labelledby="send-heading">
+      <h2 id="send-heading">Send</h2>
+      <label>Asset
+        <select id="token">
+          <option value="USDT">USDT</option>
+          <option value="USDC">USDC</option>
+        </select>
+      </label>
+      <label>Recipient
+        <input id="recipient" inputmode="text" autocomplete="off" placeholder="0x..." />
+      </label>
+      <label>Amount
+        <input id="amount" inputmode="decimal" autocomplete="off" placeholder="100.00" />
+      </label>
+      <button id="quote">Get quote</button>
+      <div id="quote-result"></div>
+      <button id="send" disabled>Approve &amp; send</button>
+      <p id="status" role="status"></p>
+    </section>
+
+    <section>
+      <h2>Safety</h2>
+      <ul>
+        <li>Tfumela never asks for your seed phrase or private key.</li>
+        <li>BNB is used only for gas.</li>
+        <li>Always verify the recipient address before signing.</li>
+      </ul>
+    </section>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
