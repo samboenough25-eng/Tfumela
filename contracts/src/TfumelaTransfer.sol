@@ -8,15 +8,24 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+/// @title TfumelaTransfer
+/// @notice Non-custodial USDT/USDC transfer rail. The caller's wallet supplies both
+/// recipient principal and the Tfumela fee via ERC20 transferFrom.
 contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     uint16 public constant BPS = 10_000;
-    uint16 public constant MAX_FEE_BPS = 1_000;
-    uint256 public constant MAX_FIXED_FEE = 1000e6;
+    uint16 public constant MAX_FEE_BPS = 1_000; // 10% hard ceiling
+    uint256 public constant MAX_FIXED_FEE = 1_000e6;
+    uint256 public constant MAX_FEE = 1_000e6;
     uint8 public constant REQUIRED_TOKEN_DECIMALS = 6;
 
-    struct FeeConfig { bool enabled; uint16 feeBps; uint256 fixedFee; uint256 maxFee; }
+    struct FeeConfig {
+        bool enabled;
+        uint16 feeBps;
+        uint256 fixedFee;
+        uint256 maxFee;
+    }
 
     address public treasury;
     mapping(address => bool) public supportedToken;
@@ -34,11 +43,20 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     error EmptyTransferId();
     error TransferIdAlreadyUsed();
     error InvalidTokenDecimals();
+    error InvalidTokenContract();
 
     event SupportedTokenUpdated(address indexed token, bool enabled);
     event FeeConfigUpdated(address indexed token, bool enabled, uint16 feeBps, uint256 fixedFee, uint256 maxFee);
     event TreasuryUpdated(address indexed previousTreasury, address indexed newTreasury);
-    event TfumelaTransfer(bytes32 indexed transferId, address indexed sender, address indexed token, address recipient, uint256 amount, uint256 fee, uint256 total);
+    event TfumelaTransfer(
+        bytes32 indexed transferId,
+        address indexed sender,
+        address indexed token,
+        address recipient,
+        uint256 amount,
+        uint256 fee,
+        uint256 total
+    );
 
     constructor(address initialOwner, address initialTreasury) Ownable(initialOwner) {
         if (initialOwner == address(0) || initialTreasury == address(0)) revert ZeroAddress();
@@ -46,7 +64,9 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     }
 
     function sendToken(address token, address recipient, uint256 amount, bytes32 transferId)
-        external nonReentrant whenNotPaused
+        external
+        nonReentrant
+        whenNotPaused
     {
         if (!supportedToken[token]) revert UnsupportedToken();
         FeeConfig memory c = feeConfig[token];
@@ -57,11 +77,11 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
         if (transferId == bytes32(0)) revert EmptyTransferId();
         if (usedTransferId[transferId]) revert TransferIdAlreadyUsed();
 
-        usedTransferId[transferId] = true;
-
         uint256 fee = calculateFee(token, amount);
         uint256 total = amount + fee;
 
+        // State is reverted atomically if either token transfer fails.
+        usedTransferId[transferId] = true;
         IERC20(token).safeTransferFrom(msg.sender, recipient, amount);
         if (fee != 0) IERC20(token).safeTransferFrom(msg.sender, treasury, fee);
 
@@ -72,9 +92,10 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
         if (!supportedToken[token]) revert UnsupportedToken();
         FeeConfig memory c = feeConfig[token];
         if (!c.enabled) revert TokenDisabled();
+
         uint256 variableFee = (amount * c.feeBps) / BPS;
         uint256 fee = c.fixedFee + variableFee;
-        if (fee > c.maxFee) revert FeeTooHigh();
+        if (fee > c.maxFee || fee > MAX_FEE) revert FeeTooHigh();
         return fee;
     }
 
@@ -86,6 +107,7 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
     function setSupportedToken(address token, bool enabled) external onlyOwner {
         if (token == address(0)) revert ZeroAddress();
         if (enabled) {
+            if (token.code.length == 0) revert InvalidTokenContract();
             uint8 decimals = IERC20Metadata(token).decimals();
             if (decimals != REQUIRED_TOKEN_DECIMALS) revert InvalidTokenDecimals();
             verifiedToken[token] = true;
@@ -94,9 +116,21 @@ contract TfumelaTransfer is Ownable, Pausable, ReentrancyGuard {
         emit SupportedTokenUpdated(token, enabled);
     }
 
-    function setFeeConfig(address token, bool enabled, uint16 feeBps, uint256 fixedFee, uint256 maxFee) external onlyOwner {
+    function setFeeConfig(
+        address token,
+        bool enabled,
+        uint16 feeBps,
+        uint256 fixedFee,
+        uint256 maxFee
+    ) external onlyOwner {
         if (token == address(0)) revert ZeroAddress();
-        if (feeBps > MAX_FEE_BPS || fixedFee > MAX_FIXED_FEE || (enabled && (maxFee == 0 || maxFee < fixedFee))) revert InvalidFee();
+        if (
+            feeBps > MAX_FEE_BPS ||
+            fixedFee > MAX_FIXED_FEE ||
+            maxFee > MAX_FEE ||
+            (enabled && (maxFee == 0 || maxFee < fixedFee))
+        ) revert InvalidFee();
+
         feeConfig[token] = FeeConfig(enabled, feeBps, fixedFee, maxFee);
         emit FeeConfigUpdated(token, enabled, feeBps, fixedFee, maxFee);
     }
