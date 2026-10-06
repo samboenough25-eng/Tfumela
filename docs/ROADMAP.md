@@ -1,7 +1,7 @@
 # Tfumela Build Roadmap
 
 ## Stage 1 — Specification and foundation
-**Status: STARTED**
+**Status: SUBSTANTIALLY COMPLETE**
 
 - Product scope
 - USDT/USDC-only policy
@@ -13,6 +13,7 @@
 - KYC deferred
 
 ## Stage 2 — Repository and development foundation
+**Status: IN PROGRESS**
 - TypeScript/Node backend
 - Web dApp
 - Solidity contract workspace
@@ -22,6 +23,7 @@
 - lint/typecheck/test gates
 
 ## Stage 3 — Smart contract
+**Status: IN PROGRESS — CORE IMPLEMENTATION PRESENT**
 - Supported USDT/USDC configuration
 - Transfer function
 - Fee calculation
@@ -51,6 +53,7 @@
 - history
 
 ## Stage 6 — Backend + new Render PostgreSQL
+**Status: FOUNDATION STARTED**
 - schema/migrations
 - authentication
 - wallet/recipient records
