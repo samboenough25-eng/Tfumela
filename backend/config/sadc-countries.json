@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "countries": [
+    {"code":"AO","name":"Angola","dialCode":"+244","status":"PLANNED","fiat":"AOA"},
+    {"code":"BW","name":"Botswana","dialCode":"+267","status":"TESTNET","fiat":"BWP"},
+    {"code":"KM","name":"Comoros","dialCode":"+269","status":"PLANNED","fiat":"KMF"},
+    {"code":"CD","name":"Democratic Republic of Congo","dialCode":"+243","status":"PLANNED","fiat":"CDF"},
+    {"code":"SZ","name":"Eswatini","dialCode":"+268","status":"PLANNED","fiat":"SZL"},
+    {"code":"LS","name":"Lesotho","dialCode":"+266","status":"PLANNED","fiat":"LSL"},
+    {"code":"MG","name":"Madagascar","dialCode":"+261","status":"PLANNED","fiat":"MGA"},
+    {"code":"MW","name":"Malawi","dialCode":"+265","status":"PLANNED","fiat":"MWK"},
+    {"code":"MU","name":"Mauritius","dialCode":"+230","status":"PLANNED","fiat":"MUR"},
+    {"code":"MZ","name":"Mozambique","dialCode":"+258","status":"PLANNED","fiat":"MZN"},
+    {"code":"NA","name":"Namibia","dialCode":"+264","status":"PLANNED","fiat":"NAD"},
+    {"code":"SC","name":"Seychelles","dialCode":"+248","status":"PLANNED","fiat":"SCR"},
+    {"code":"ZA","name":"South Africa","dialCode":"+27","status":"PLANNED","fiat":"ZAR"},
+    {"code":"TZ","name":"Tanzania","dialCode":"+255","status":"PLANNED","fiat":"TZS"},
+    {"code":"ZM","name":"Zambia","dialCode":"+260","status":"PLANNED","fiat":"ZMW"},
+    {"code":"ZW","name":"Zimbabwe","dialCode":"+263","status":"PLANNED","fiat":"ZWL"}
+  ]
+}
