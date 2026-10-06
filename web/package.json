@@ -1,1 +1,17 @@
-{"name":"@tfumela/web","private":true,"version":"0.1.0","scripts":{"test":"node --test"}}
+{
+  "name": "@tfumela/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ethers": "^6.15.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
