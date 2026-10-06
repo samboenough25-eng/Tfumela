@@ -4,73 +4,98 @@ WhatsApp-first peer-to-peer stablecoin money transfer product powered by BNB Sma
 
 ## V1 mission
 
-Tfumela enables people to send **USDT or USDC** to other people on BNB Smart Chain. The customer uses WhatsApp to initiate and track transfers, while a connected customer wallet authorizes blockchain transactions.
+Tfumela enables people to send **USDT or USDC** to other people on BNB Smart Chain. WhatsApp is the primary customer interaction channel, while a connected customer wallet authorizes blockchain transactions.
 
-**V1 is a working testnet product first. KYC/AML provider integration is deliberately deferred to a later production/compliance stage.**
+**V1 is a working testnet product first. KYC/AML provider integration is deliberately deferred to the production/compliance stage.**
 
 ## Core principles
 
 - Stablecoins only: USDT and USDC.
-- BNB is used only for network gas where required; it is not a customer transfer asset.
+- BNB is used only for network gas; it is not a customer transfer asset.
 - Customer funds remain in the customer's wallet until the customer authorizes a transaction.
 - WhatsApp never receives or controls customer private keys.
 - The smart contract is the on-chain financial authority for supported transfers and fees.
-- Tfumela charges a transparent, configurable transfer fee.
+- Tfumela uses transparent **Option B fees: 0.5 stablecoin fixed + 0.5% variable**, charged on top of the recipient amount.
+- Contract fee configuration is bounded by hard protocol ceilings and is observable through events.
 - Admin controls must never provide a hidden ability to move customer principal.
 - Testnet before mainnet.
 - A completely new Render PostgreSQL database will be used; no Liholiswano database is reused.
-- Token/network addresses are configuration, never guessed or hard-coded from unrelated projects.
+- Token/network addresses are configuration, never guessed or copied from unrelated projects.
 
-## Target V1 flow
+## Current customer dApp
 
-1. Customer registers a Tfumela account.
-2. Customer links a wallet.
-3. Customer registers or selects a recipient.
-4. Customer chooses USDT or USDC and enters the amount.
-5. Tfumela calculates and displays the fee and total.
-6. Customer confirms in WhatsApp.
-7. Tfumela opens/prepares the wallet authorization flow.
-8. Customer signs the transaction with the wallet.
-9. The smart contract transfers the requested stablecoin and collects the Tfumela fee.
-10. Backend monitors the blockchain and records the result.
-11. WhatsApp reports pending, confirmed, or failed status.
+The repository now contains a real Vite wallet dApp under web/ with:
 
-## Planned system
+1. MetaMask connection.
+2. BNB Smart Chain Testnet switching/setup.
+3. USDT and USDC balance display.
+4. On-chain fee quote using the deployed contract.
+5. Exact allowance approval for amount + fee.
+6. Customer-signed contract transfer.
+7. Transaction confirmation feedback.
 
-- **Customer interface:** WhatsApp + lightweight web wallet/signing dApp.
-- **Backend:** TypeScript/Node.js API.
-- **Database:** dedicated Render PostgreSQL.
-- **Blockchain:** BNB Smart Chain.
-- **Smart contract:** Solidity, using established audited libraries where appropriate.
-- **Testing:** unit, integration, security/property, and full E2E tests.
-- **Deployment:** GitHub Actions + Render + BNB testnet.
-- **Admin:** operations, fees, limits, system health, reconciliation; never customer principal custody.
+The dApp requires these build-time Render/static-site variables:
 
-## Important product boundary
+- VITE_TFUMELA_CONTRACT_ADDRESS
+- VITE_USDT_CONTRACT_ADDRESS
+- VITE_USDC_CONTRACT_ADDRESS
 
-The first release is intentionally not a fiat remittance/off-ramp product. It transfers supported stablecoins on-chain. Fiat on/off-ramp partnerships, expanded compliance, and additional assets are future work.
+Do not populate these with guessed addresses. They must come from a successful BNB testnet deployment and independent verification.
+
+## Economic model
+
+Option B:
+
+fee = fixedFee + floor(amount × 50 / 10,000)
+
+Default fixed fee is **0.5 USDT/USDC** with six-decimal tokens.
+
+Example:
+
+- Recipient amount: 100 USDT
+- Fee: 1 USDT
+- Customer wallet total: 101 USDT
+- Recipient receives: 100 USDT
+- Treasury receives: 1 USDT
+
+The contract and backend both treat the on-chain quote as authoritative. The backend arithmetic helper is for deterministic validation/tests and must not replace an on-chain quote.
+
+## System boundary
+
+Customer -> WhatsApp -> Tfumela API -> wallet authorization -> Tfumela contract -> BNB Smart Chain.
+
+The backend prepares, records, monitors and reconciles. It does not hold customer private keys or sign customer transfers.
+
+## SADC readiness
+
+The architecture is configuration-driven for all 16 SADC countries. Country support is independent from blockchain network, token choice and legal authorization. A country may be PLANNED, TESTNET, PILOT, LIVE, RESTRICTED or DISABLED.
+
+Technical readiness is not legal authorization. Production launch requires country-by-country regulatory/legal determination and any required compliance, licensing, consumer-protection, tax, data and local-partner controls.
 
 ## Build stages
 
-1. Product/economic/technical specification
-2. Repository and infrastructure foundation
+1. Specification and economic model
+2. Repository/infrastructure foundation
 3. Smart contract implementation
 4. Contract security and automated testing
-5. Customer web signing dApp
-6. Backend and PostgreSQL
+5. Customer wallet dApp
+6. Backend and dedicated PostgreSQL
 7. Recipient/account security
 8. WhatsApp adapter and Cloud API integration
 9. Admin/operations dashboard
 10. BNB testnet deployment
 11. Full E2E and failure/recovery testing
-12. Security/economic audit and production gate
-13. KYC/AML and regulatory production layer
-14. Mainnet controlled launch
+12. Full security/economic/deployment audit
+13. Production regulatory/compliance gate
+14. Controlled mainnet launch
 
-## Status
+## Current status
 
-**Stage 1 — specification and foundation: IN PROGRESS**
+**Engineering foundation: substantially built. Customer dApp: first working implementation built. Testnet deployment: NOT YET COMPLETE.**
+
+The remaining critical gates are backend blockchain orchestration/reconciliation, dedicated Render PostgreSQL, WhatsApp adapter, verified BNB testnet deployment, full USDT/USDC E2E, failure/recovery testing, and final security/economic audit.
 
 See:
-- [docs/TFUMELA_V1_SPECIFICATION.md](docs/TFUMELA_V1_SPECIFICATION.md)
-- [docs/ROADMAP.md](docs/ROADMAP.md)
+- docs/TFUMELA_V1_SPECIFICATION.md
+- docs/ROADMAP.md
+- docs/SADC_REGIONAL_DESIGN.md
