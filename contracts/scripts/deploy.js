@@ -35,6 +35,8 @@ async function main() {
     "function decimals() view returns (uint8)"
   ];
   for (const [symbol, token] of [["USDT", usdt], ["USDC", usdc]]) {
+    const code = await ethers.provider.getCode(token);
+    if (code === "0x") throw new Error(`${symbol} address has no contract bytecode: ${token}`);
     const reader = new ethers.Contract(token, TokenReader, ethers.provider);
     const decimals = Number(await reader.decimals());
     if (decimals !== 6) throw new Error(`${symbol} at ${token} reports ${decimals} decimals; expected 6`);
