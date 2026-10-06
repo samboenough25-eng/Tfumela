@@ -1,0 +1,1 @@
+{"name":"@tfumela/contracts","private":true,"version":"0.1.0","scripts":{"test":"hardhat test"},"devDependencies":{"hardhat":"^2.26.0","@nomicfoundation/hardhat-toolbox":"^6.1.0"},"dependencies":{"@openzeppelin/contracts":"^5.4.0"}}
